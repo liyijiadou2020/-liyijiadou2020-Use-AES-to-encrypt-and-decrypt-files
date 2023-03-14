@@ -71,9 +71,11 @@ init:
 	int mode = 1;
 	cout << "WELCOME...\n 要使用哪种算法来加密？\n >> RSA(1) \n >> 类AES(2)\n >> ECC(3) \n" <<
 		"\n如果你想要生成AES密钥请输入(4)。\n 需要帮助请按下其他数字\n" << endl;
-	cin >> mode;
+	//cin >> mode;
+	
 	if (mode == 1)//rsa
 	{
+		cout << "你选择了RSA模式。\n";
 		ull p, q, f, n, e, d, c;
 		int length;
 		string str;
