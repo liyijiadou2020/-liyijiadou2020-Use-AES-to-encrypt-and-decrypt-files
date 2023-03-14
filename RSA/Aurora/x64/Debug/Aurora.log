@@ -12,5 +12,5 @@ D:\source\Information-Protect\Use-AES-to-encrypt-and-decrypt-files\RSA\Aurora\ae
 D:\source\Information-Protect\Use-AES-to-encrypt-and-decrypt-files\RSA\Aurora\aes.h(321,17): warning C4101: “temp2”: 未引用的局部变量
 D:\source\Information-Protect\Use-AES-to-encrypt-and-decrypt-files\RSA\Aurora\aes.h(321,10): warning C4101: “temp1”: 未引用的局部变量
 D:\source\Information-Protect\Use-AES-to-encrypt-and-decrypt-files\RSA\Aurora\Aurora.cpp(64,1): warning C4326: “main”的返回类型应为“int”而非“void”
-D:\source\Information-Protect\Use-AES-to-encrypt-and-decrypt-files\RSA\Aurora\Aurora.cpp(118,24): warning C4244: “参数”: 从“ull”转换到“int”，可能丢失数据
+D:\source\Information-Protect\Use-AES-to-encrypt-and-decrypt-files\RSA\Aurora\Aurora.cpp(120,24): warning C4244: “参数”: 从“ull”转换到“int”，可能丢失数据
   Aurora.vcxproj -> D:\source\Information-Protect\Use-AES-to-encrypt-and-decrypt-files\RSA\x64\Debug\Aurora.exe
