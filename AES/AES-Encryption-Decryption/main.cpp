@@ -49,6 +49,8 @@ int main() {
 	cout << endl;
 	encrypt(sta_matr, expanded_key_array);
 	
+	cout << "-----------------------------\n" << "解密中..." << endl;
+
 	cout << endl << "密文是:" << endl;
 	for (int i = 0; i < 16; i++) {
 		cout << hex << sta_matr[i].to_ulong() << "  ";
@@ -56,11 +58,15 @@ int main() {
 	}
 
 	//再次进行解密
-	cout << endl;
-	cout << "密文解密得到:" << endl;
-	decrypt(sta_matr, expanded_key_array);
+	byte* encryped_text = new byte[16];
+	encryped_text = sta_matr;
+	
+	
+	cout << "\n密文解密得到:" << endl;
+	decrypt(encryped_text, expanded_key_array);
+
 	for (int i = 0; i < 16; i++) {
-		cout << hex << sta_matr[i].to_ulong() << "  ";
+		cout << hex << encryped_text[i].to_ulong() << "  ";
 		if ((i + 1) % 4 == 0)cout << endl;
 	}
 
