@@ -3,7 +3,7 @@
 #include <cmath>
 using namespace std;
 
-string BinToHex(string str) {//二进制转换为十六进制的函数实现
+string BinToHex(string str) { //#2->#16
 	string hex = "";
 	int temp = 0;
 	while (str.size() % 4 != 0) {
@@ -21,7 +21,7 @@ string BinToHex(string str) {//二进制转换为十六进制的函数实现
 	return hex;
 }
 
-string HexToBin(string str) {//十六进制转换为二进制的函数实现
+string HexToBin(string str) {//#16->#2
 	string bin = "";
 	string table[16] = { "0000","0001","0010","0011","0100","0101","0110","0111","1000","1001","1010","1011","1100","1101","1110","1111" };
 	for (int i = 0; i < str.size(); i++) {
@@ -36,7 +36,7 @@ string HexToBin(string str) {//十六进制转换为二进制的函数实现
 }
 
 
-int HexToDec(char str) {//十六进制转换为十进制的函数实现
+int HexToDec(char str) {//#16->#10
 	int dec = 0;
 	if (str >= 'A' && str <= 'F') {
 		dec += (str - 'A' + 10);
@@ -47,13 +47,13 @@ int HexToDec(char str) {//十六进制转换为十进制的函数实现
 	return dec;
 }
 
-string LeftShift(string str, int len) {//循环左移len位函数实现
+string LeftShift(string str, int len) {//shift left
 	string res = HexToBin(str);
 	res = res.substr(len) + res.substr(0, len);
 	return BinToHex(res);
 }
 
-string XOR(string str1, string str2) {//异或函数实现
+string XOR(string str1, string str2) {//XOR
 	string res1 = HexToBin(str1);
 	string res2 = HexToBin(str2);
 	string res = "";
@@ -68,7 +68,7 @@ string XOR(string str1, string str2) {//异或函数实现
 	return BinToHex(res);
 }
 
-string NLTransform(string str) {//非线性变换t函数实现
+string NLTransform(string str) {//Non-Linear function t
 	string Sbox[16][16] = { {"D6","90","E9","FE","CC","E1","3D","B7","16","B6","14","C2","28","FB","2C","05"},
 						 {"2B","67","9A","76","2A","BE","04","C3","AA","44","13","26","49","86","06","99"},
 						 {"9C","42","50","F4","91","EF","98","7A","33","54","0B","43","ED","CF","AC","62"},
@@ -92,23 +92,23 @@ string NLTransform(string str) {//非线性变换t函数实现
 	return res;
 }
 
-string LTransform(string str) {//线性变换L函数实现
+string LTransform(string str) {//Linear function L
 	return XOR(XOR(XOR(XOR(str, LeftShift(str, 2)), LeftShift(str, 10)), LeftShift(str, 18)), LeftShift(str, 24));
 }
 
-string L2Transform(string str) {//线性变换L'函数实现
+string L2Transform(string str) {//L'
 	return XOR(XOR(str, LeftShift(str, 13)), LeftShift(str, 23));
 }
 
-string T(string str) {//用于加解密算法中的合成置换T函数实现
+string T(string str) {// For encryption 
 	return LTransform(NLTransform(str));
 }
 
-string T2(string str) {//用于密钥扩展算法中的合成置换T函数实现
+string T2(string str) {// For key expansion
 	return L2Transform(NLTransform(str));
 }
 
-string KeyExtension(string MK) {//密钥扩展函数实现
+string KeyExtension(string MK) {// Key Expansion
 	string FK[4] = { "A3B1BAC6", "56AA3350", "677D9197", "B27022DC" };
 	string CK[32] = { "00070E15", "1C232A31", "383F464D", "545B6269",
 							"70777E85", "8C939AA1", "A8AFB6BD", "C4CBD2D9",
@@ -127,8 +127,8 @@ string KeyExtension(string MK) {//密钥扩展函数实现
 	return rks;
 }
 
-string encode(string plain, string key) {//加密函数实现
-	cout << "轮密钥与每轮输出状态：" << endl;
+string encode(string plain, string key) {// Encryption
+	cout << "Round Key & Output Status: " << endl;
 	cout << endl;
 	string cipher[36] = { plain.substr(0,8),plain.substr(8,8),plain.substr(16,8),plain.substr(24) };
 	string rks = KeyExtension(key);
@@ -141,7 +141,7 @@ string encode(string plain, string key) {//加密函数实现
 }
 
 string decode(string cipher, string key) {//解密函数实现
-	cout << "轮密钥与每轮输出状态：" << endl;
+	cout << "Round Key & Output Status: " << endl;
 	cout << endl;
 	string plain[36] = { cipher.substr(0,8),cipher.substr(8,8), cipher.substr(16,8), cipher.substr(24,8) };
 	string rks = KeyExtension(key);
@@ -153,21 +153,24 @@ string decode(string cipher, string key) {//解密函数实现
 	return plain[35] + plain[34] + plain[33] + plain[32];
 }
 
-int main() {//主函数
-	string str = "0123456789ABCDEFFEDCBA9876543210";
-	cout << "明    文：" << str.substr(0, 8) << "  " << str.substr(8, 8) << "  " << str.substr(16, 8) << "  " << str.substr(24, 8) << endl;
+int main() {
+	
+	string str = "0123456789AAAAAAAAAAAB9876543210";
+	
+	cout << "Plain Text: " << str.substr(0, 8) << "  " << str.substr(8, 8) << "  " << str.substr(16, 8) << "  " << str.substr(24, 8) << endl;
 	cout << endl;
 	string key = "0123456789ABCDEFFEDCBA9876543210";
-	cout << "加密密钥：" << key.substr(0, 8) << "  " << key.substr(8, 8) << "  " << key.substr(16, 8) << "  " << key.substr(24, 8) << endl;
+
+	cout << "Encypt with: " << key.substr(0, 8) << "  " << key.substr(8, 8) << "  " << key.substr(16, 8) << "  " << key.substr(24, 8) << endl;
 	cout << endl;
 	string cipher = encode(str, key);
-	cout << "密    文：" << cipher.substr(0, 8) << "  " << cipher.substr(8, 8) << "  " << cipher.substr(16, 8) << "  " << cipher.substr(24, 8) << endl;
+	cout << "Cipher text: " << cipher.substr(0, 8) << "  " << cipher.substr(8, 8) << "  " << cipher.substr(16, 8) << "  " << cipher.substr(24, 8) << endl;
 	cout << endl;
-	cout << "密    文：" << cipher.substr(0, 8) << "  " << cipher.substr(8, 8) << "  " << cipher.substr(16, 8) << "  " << cipher.substr(24, 8) << endl;
+	cout << "Cipher text: " << cipher.substr(0, 8) << "  " << cipher.substr(8, 8) << "  " << cipher.substr(16, 8) << "  " << cipher.substr(24, 8) << endl;
 	cout << endl;
-	cout << "解密密钥：" << key.substr(0, 8) << "  " << key.substr(8, 8) << "  " << key.substr(16, 8) << "  " << key.substr(24, 8) << endl;
+	cout << "Decrypt with: " << key.substr(0, 8) << "  " << key.substr(8, 8) << "  " << key.substr(16, 8) << "  " << key.substr(24, 8) << endl;
 	cout << endl;
 	string plain = decode(cipher, key);
-	cout << "明    文：" << plain.substr(0, 8) << "  " << plain.substr(8, 8) << "  " << plain.substr(16, 8) << "  " << plain.substr(24, 8) << endl;
+	cout << "Got from decrption: " << plain.substr(0, 8) << "  " << plain.substr(8, 8) << "  " << plain.substr(16, 8) << "  " << plain.substr(24, 8) << endl;
 }
 

@@ -104,7 +104,8 @@ void encrypt(byte sta_matr[4 * 4], word w[4 * (Nr + 1)]) {
 	
 	//先进行一次轮密钥加 
 	RKey_Add(sta_matr, key);
-	cout<<"第0轮加密（只有轮密钥加）的结果是："<<endl;
+	
+	cout<<"> Round 0 Encrypting Result (Only With RoundKeyAdd)："<<endl;
 	for(int i=0;i<16;i++){
 			cout<<hex<<sta_matr[i].to_ulong()<<"  ";
 			if((i+1)%4==0)cout<<endl;
@@ -122,7 +123,7 @@ void encrypt(byte sta_matr[4 * 4], word w[4 * (Nr + 1)]) {
 		RKey_Add(sta_matr, key); // 轮密钥加
 		
 		cout<<endl;
-		cout<<"第"<<r<<"轮加密的结果是："<<endl;
+		cout<<"> Round "<<r<<" Encrypting Result: "<<endl;
 
 		for(int i=0;i<16;i++){
 		cout<<hex<<sta_matr[i].to_ulong()<<"  ";
@@ -138,7 +139,7 @@ void encrypt(byte sta_matr[4 * 4], word w[4 * (Nr + 1)]) {
 	RKey_Add(sta_matr, key);
 	cout << endl;
 
-	cout<<"第10轮加密（字节替换、行移位、轮密钥加）的结果是："<<endl;
+	cout<<"> Round 10 (SubBytes, ShiftRow, RoundKeyAdd) Result: "<<endl;
 	for(int i=0;i<16;i++){
 		cout<<hex<<sta_matr[i].to_ulong()<<"  ";
 		if((i+1)%4==0)cout<<endl;

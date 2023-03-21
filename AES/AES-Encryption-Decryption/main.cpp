@@ -23,14 +23,15 @@ int main() {
 	KeyExpansion(key, expanded_key_array);
 
 		//输出密钥，ok
-	cout << "密钥是:" << endl;
+	cout << "************************* TESTING AES-128 ALGOTIRHM *************************" << endl;
+	cout << "(1) The original key:" << endl;
 	for (int i = 0; i < 16; i++) {
-		cout << hex << key[i].to_ulong() << "  ";
+		cout << hex << key[i].to_ulong() << "  "; //以16进制显示
 		if ((i + 1) % 4 == 0) cout << endl;
 	}
 
 	//密钥拓展数组，ok
-	cout << "拓展的密钥数组:" << endl;
+	cout << "\n(2) Expanded key array:" << endl;
 	for (int i = 0; i < 44; i++) {
 		cout << hex << expanded_key_array[i].to_ulong() << "  ";
 		if ((i + 1) % 4 == 0) cout << endl;
@@ -38,31 +39,28 @@ int main() {
 	
 	//输出明文，ok
 	cout << endl;
-	cout << "明文是:" << endl;
+	cout << "(3) Plain text:" << endl;
 	for (int i = 0; i < 16; i++) {
 		cout << hex << sta_matr[i].to_ulong() << "  ";
 		if ((i + 1) % 4 == 0) cout << endl;
 	}
 
- 
-	//输出密文
-	cout << endl;
+	cout << "-----------------------------\n" << "Encrypting...";
 	encrypt(sta_matr, expanded_key_array);
-	
-	cout << "-----------------------------\n" << "解密中..." << endl;
-
-	cout << endl << "密文是:" << endl;
+	//输出密文
+	cout << endl << "(4) Cipher Text:" << endl;
 	for (int i = 0; i < 16; i++) {
 		cout << hex << sta_matr[i].to_ulong() << "  ";
 		if ((i + 1) % 4 == 0)cout << endl;
 	}
 
+	
+	cout << "-----------------------------\n" << "Decrypting..." << endl;
 	//再次进行解密
 	byte* encryped_text = new byte[16];
 	encryped_text = sta_matr;
-	
-	
-	cout << "\n密文解密得到:" << endl;
+		
+	cout << "(5) What we got from decryption:" << endl;
 	decrypt(encryped_text, expanded_key_array);
 
 	for (int i = 0; i < 16; i++) {
@@ -70,7 +68,7 @@ int main() {
 		if ((i + 1) % 4 == 0)cout << endl;
 	}
 
-
+	cout << "************************* TEST FINISHED *************************" << endl;
 
 	return 0;
 
