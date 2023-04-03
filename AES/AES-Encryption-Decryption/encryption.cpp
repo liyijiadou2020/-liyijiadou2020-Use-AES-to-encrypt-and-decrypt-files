@@ -24,8 +24,14 @@ byte GFMul(byte a, byte b) {
 }
 
 
-// 1 轮密钥加 将状态矩阵的一列的四个字节和轮密钥的对应字节进行异或   
-void RKey_Add(byte sta_matr[4 * 4], word w[4]) {
+/*
+* RKey_Add(AddRoundKey) Берёт из расписания ключей `w` одну матрицу размера 4×Nb 
+* и поэлементно добавляет(XOR) её к матрице состояния .
+* Если два раза применить AddRoundKey, то ничего не изменится,
+* поэтому преобразование обратное к AddRoundKey это оно само.
+*/
+// 1 轮密钥加 将状态矩阵的一列的四个字节和轮密钥的对应字节进行异或 
+void RKey_Add(byte status[4 * 4], word w[4]) {
 	for (int i = 0; i < 4; i++) {
 		//每一轮完成一列 四个字节的异或 
 		word k0 = w[i] >> 24;
@@ -33,29 +39,36 @@ void RKey_Add(byte sta_matr[4 * 4], word w[4]) {
 		word k2 = (w[i] << 16) >> 24;
 		word k3 = (w[i] << 24) >> 24;
 
-		sta_matr[i] = sta_matr[i] ^ byte(k0.to_ulong());
-		sta_matr[i + 4] = sta_matr[i + 4] ^ byte(k1.to_ulong());
-		sta_matr[i + 8] = sta_matr[i + 8] ^ byte(k2.to_ulong());
-		sta_matr[i + 12] = sta_matr[i + 12] ^ byte(k3.to_ulong());
+		status[i] = status[i] ^ byte(k0.to_ulong());
+		status[i + 4] = status[i + 4] ^ byte(k1.to_ulong());
+		status[i + 8] = status[i + 8] ^ byte(k2.to_ulong());
+		status[i + 12] = status[i + 12] ^ byte(k3.to_ulong());
 	}
 
 }
 
+/*
+* SubBytes заменяет каждый элемент матрицы состояния соответвующим элементом 
+* таблицы SBox: sij = SBox[sij]. Преобразование SubBytes обратимо. Обратное 
+* к нему находится с помощью таблицы InvSBox.
+*/
 // 2 字节代换  经测试没有问题 
-void SubBytes(byte sta_matr[4 * 4]) {
+void SubBytes(byte status[4 * 4]) {
 	// 将16个字节依次进行代换
 	for (int i = 0; i < 16; i++) {
 		//bitset地址存放是低位在前,高位在后,与常规相反,计算需要谨慎 
-		int row = sta_matr[i][7] * 8 + sta_matr[i][6] * 4 + sta_matr[i][5] * 2 + sta_matr[i][4] * 1;
-		int col = sta_matr[i][3] * 8 + sta_matr[i][2] * 4 + sta_matr[i][1] * 2 + sta_matr[i][0] * 1;
-		sta_matr[i] = S[row * 16 + col];
+		int row = status[i][7] * 8 + status[i][6] * 4 + status[i][5] * 2 + status[i][4] * 1;
+		int col = status[i][3] * 8 + status[i][2] * 4 + status[i][1] * 2 + status[i][0] * 1;
+		status[i] = S[row * 16 + col];
 	}
-
-
 }
 
+/*
+* ShiftRows сдвигает i-ую строку матрицы s на i позиций влево, 
+* считая i с нуля. Обратное преобразование InvShiftRows сдвигает строки вправо.
+*/
  //3 行移位--按行进行字节移位   代码已测没问题 
-void ShiftRow(byte sta_matr[4 * 4]) {
+void ShiftRow(byte status[4 * 4]) {
 	//第二行循环左移一个字节
 	//第三行循环左移二个字节 
 	//第三行循环左移三个字节
@@ -66,36 +79,39 @@ void ShiftRow(byte sta_matr[4 * 4]) {
 
 		//存数 防止被覆盖
 		for (int j = 0; j < i; j++) {
-			temp[j] = sta_matr[i * 4 + j];
+			temp[j] = status[i * 4 + j];
 		}
 		// 将不会发生下标溢出的进行赋值 
 		for (int j = 0; j < 4 - i; j++) {
-			sta_matr[i * 4 + j] = sta_matr[i * 4 + j + i];
+			status[i * 4 + j] = status[i * 4 + j + i];
 		}
 		// 将暂存的数放回状态数组 行中 
 		for (int m = 4 - i; m < 4; m++) {
-			sta_matr[i * 4 + m] = temp[m + i - 4];
+			status[i * 4 + m] = temp[m + i - 4];
 		}
 	}
 }
 
+/*
+* MixColumns умножает каждый столбец матрицы s слева на особую матрицу размера 4×4:
+*/
 // 4 列混合   经测试没问题 
-void MixColumns(byte sta_matr[4 * 4], byte s[4 * 4]) {
+void MixColumns(byte status[4 * 4], byte s[4 * 4]) {
 	byte matr[4];
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++)
-			matr[j] = sta_matr[i + j * 4];
+			matr[j] = status[i + j * 4];
 
-		sta_matr[i] = GFMul(s[0], matr[0]) ^ GFMul(s[1], matr[1]) ^ GFMul(s[2], matr[2]) ^ GFMul(s[3], matr[3]);
-		sta_matr[i + 4] = GFMul(s[4], matr[0]) ^ GFMul(s[5], matr[1]) ^ GFMul(s[6], matr[2]) ^ GFMul(s[7], matr[3]);
-		sta_matr[i + 8] = GFMul(s[8], matr[0]) ^ GFMul(s[9], matr[1]) ^ GFMul(s[10], matr[2]) ^ GFMul(s[11], matr[3]);
-		sta_matr[i + 12] = GFMul(s[12], matr[0]) ^ GFMul(s[13], matr[1]) ^ GFMul(s[14], matr[2]) ^ GFMul(s[15], matr[3]);
+		status[i] = GFMul(s[0], matr[0]) ^ GFMul(s[1], matr[1]) ^ GFMul(s[2], matr[2]) ^ GFMul(s[3], matr[3]);
+		status[i + 4] = GFMul(s[4], matr[0]) ^ GFMul(s[5], matr[1]) ^ GFMul(s[6], matr[2]) ^ GFMul(s[7], matr[3]);
+		status[i + 8] = GFMul(s[8], matr[0]) ^ GFMul(s[9], matr[1]) ^ GFMul(s[10], matr[2]) ^ GFMul(s[11], matr[3]);
+		status[i + 12] = GFMul(s[12], matr[0]) ^ GFMul(s[13], matr[1]) ^ GFMul(s[14], matr[2]) ^ GFMul(s[15], matr[3]);
 	}
 
 }
 
 // 5 加密函数
-void encrypt(byte sta_matr[4 * 4], word w[4 * (Nr + 1)]) {
+void encrypt(byte status[4 * 4], word w[4 * (Nr + 1)]) {
 	
 	word key[4];
 
@@ -103,11 +119,11 @@ void encrypt(byte sta_matr[4 * 4], word w[4 * (Nr + 1)]) {
 		key[i] = w[i];
 	
 	//先进行一次轮密钥加 
-	RKey_Add(sta_matr, key);
+	RKey_Add(status, key);
 	
 	cout<<"> Round 0 Encrypting Result (Only With RoundKeyAdd)："<<endl;
 	for(int i=0;i<16;i++){
-			cout<<hex<<sta_matr[i].to_ulong()<<"  ";
+			cout<<hex<<status[i].to_ulong()<<"  ";
 			if((i+1)%4==0)cout<<endl;
 	}
 
@@ -115,33 +131,33 @@ void encrypt(byte sta_matr[4 * 4], word w[4 * (Nr + 1)]) {
 	//九轮操作   S盒  行移位  列混合  轮密钥加 
 	for (int r = 1; r < Nr; r++)
 	{
-		SubBytes(sta_matr); //字节代换
-		ShiftRow(sta_matr); // 行移位
-		MixColumns(sta_matr, encry_s); //列混合
+		SubBytes(status); //字节代换
+		ShiftRow(status); // 行移位
+		MixColumns(status, encry_s); //列混合
 		for (int i = 0; i < 4; i++) //换下一个密钥
 			key[i] = w[4 * r + i]; 
-		RKey_Add(sta_matr, key); // 轮密钥加
+		RKey_Add(status, key); // 轮密钥加
 		
 		cout<<endl;
 		cout<<"> Round "<<r<<" Encrypting Result: "<<endl;
 
 		for(int i=0;i<16;i++){
-		cout<<hex<<sta_matr[i].to_ulong()<<"  ";
+		cout<<hex<<status[i].to_ulong()<<"  ";
 		if((i+1)%4==0)cout<<endl;
 		}  
 	}
 	 
 	//第十轮   S盒  行移位  轮密钥加 
-	SubBytes(sta_matr);
-	ShiftRow(sta_matr);
+	SubBytes(status);
+	ShiftRow(status);
 	for (int i = 0; i < 4; ++i)
 		key[i] = w[4 * Nr + i];
-	RKey_Add(sta_matr, key);
+	RKey_Add(status, key);
 	cout << endl;
 
 	cout<<"> Round 10 (SubBytes, ShiftRow, RoundKeyAdd) Result: "<<endl;
 	for(int i=0;i<16;i++){
-		cout<<hex<<sta_matr[i].to_ulong()<<"  ";
+		cout<<hex<<status[i].to_ulong()<<"  ";
 		if((i+1)%4==0)cout<<endl;
 	}  
 

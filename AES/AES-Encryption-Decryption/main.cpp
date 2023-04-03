@@ -1,60 +1,79 @@
 #include"encryption.h"
 #include"decrypt.h"
-#include<iostream>
-#include<bitset>
+#include <iostream>
+#include <bitset>
 
-// date：2023年3月14日 星期二
-// 测试通过
+// -------------------------------------------------------------------------------------
+// Реализация шифрования и дешифрования 128-битных строк с использованием алгоритма AES, 
+// которая преобразует один 128-битный блок в другой.
+// Этот алгоритм преобразует один 128-битный блок в другой, используя секретный ключ 
+// который нужен для такого преобразования. Для расшифровки полученного 128-битного 
+// блока используют второе преобразование с тем же секретным ключом. Выглядит это так: 
+//		cipher = encrypt(block, key) // шифруем block с помощью key 
+//		block = decrypt(cipher, key) // расшифровываем cipher с помощью key
+// 
+// -------------------------------------------------------------------------------------
+// date：20230314 
+// author: liyijia
+// TEST PASS.
+
+
+
+void print_bit_stream(byte* s) {
+	for (int i = 0; i < 16; i++) {
+		cout << hex << s[i].to_ulong() << "  ";
+		if ((i + 1) % 4 == 0) cout << endl;
+	}
+}
+
+void print_expanted_key(word* keys) {
+	for (int i = 0; i < 44; i++) {
+		cout << hex << keys[i].to_ulong() << "  ";
+		if ((i + 1) % 4 == 0) cout << endl;
+	}
+}
+
 int main() {
-	//种子密钥 
-	byte key[16] = { 0x2b, 0x7e, 0x15, 0x16,
-					0x28, 0xae, 0xd2, 0xa6,
-					0xab, 0xf7, 0x15, 0x88,
-					0x09, 0xcf, 0x4f, 0x3c };
 
-		//输入的明文 
-	byte sta_matr[16] = { 0x32,0x88,0x31,0xe0,
+	//输入的明文 
+	byte sta_matr[16] = { 0x12,0x34,0x56,0x78,
 						0x43,0x5a,0x31,0x37,
 						0xf6,0x30,0x98,0x07,
-						0xa8,0x8d,0xa2,0x34 };
+						0xaa,0xbb,0xcc,0xdd };
 
-		//进行密钥扩展
-	word expanded_key_array[4 * (Nr + 1)]; //Nr=10
-	KeyExpansion(key, expanded_key_array);
-
-		//输出密钥，ok
-	cout << "************************* TESTING AES-128 ALGOTIRHM *************************" << endl;
-	cout << "(1) The original key:" << endl;
-	for (int i = 0; i < 16; i++) {
-		cout << hex << key[i].to_ulong() << "  "; //以16进制显示
-		if ((i + 1) % 4 == 0) cout << endl;
-	}
-
-	//密钥拓展数组，ok
-	cout << "\n(2) Expanded key array:" << endl;
-	for (int i = 0; i < 44; i++) {
-		cout << hex << expanded_key_array[i].to_ulong() << "  ";
-		if ((i + 1) % 4 == 0) cout << endl;
-	}
-	
 	//输出明文，ok
 	cout << endl;
-	cout << "(3) Plain text:" << endl;
-	for (int i = 0; i < 16; i++) {
-		cout << hex << sta_matr[i].to_ulong() << "  ";
-		if ((i + 1) % 4 == 0) cout << endl;
-	}
+	cout << "(1) Plain text:\n"; 
+	print_bit_stream(sta_matr);
+	
+	cout << "************************* TESTING AES-128 ALGOTIRHM *************************" << endl;
 
-	cout << "-----------------------------\n" << "Encrypting...";
+		
+	byte key[16] = { 0xce, 0x7e, 0x15, 0x16, //种子密钥 
+					0x28, 0xae, 0xd2, 0xa6,
+					0xab, 0xf7, 0x15, 0x88,
+					0x09, 0xcf, 0x4f, 0x2b };
+		//输出密钥，ok
+	cout << "(2) The original key:\n"; 
+	print_bit_stream(key);
+	
+
+	//进行密钥扩展
+	word expanded_key_array[4 * (Nr + 1)]; //Nr=10
+	KeyExpansion(key, expanded_key_array);
+	//密钥拓展数组(расписание ключей)，ok
+	cout << "\n(3) Expanded key array:\n";
+	print_expanted_key(expanded_key_array);
+
+	cout << "-----------------------------\nEncrypting...\n";
+	// Алгоритм шифрования получает на вход 128-битный 
+	// блок данных input и расписание ключей w, которое получается после KeyExpansion.
 	encrypt(sta_matr, expanded_key_array);
+	
 	//输出密文
 	cout << endl << "(4) Cipher Text:" << endl;
-	for (int i = 0; i < 16; i++) {
-		cout << hex << sta_matr[i].to_ulong() << "  ";
-		if ((i + 1) % 4 == 0)cout << endl;
-	}
-
-	
+	print_bit_stream(sta_matr);
+		
 	cout << "-----------------------------\n" << "Decrypting..." << endl;
 	//再次进行解密
 	byte* encryped_text = new byte[16];
@@ -62,11 +81,7 @@ int main() {
 		
 	cout << "(5) What we got from decryption:" << endl;
 	decrypt(encryped_text, expanded_key_array);
-
-	for (int i = 0; i < 16; i++) {
-		cout << hex << encryped_text[i].to_ulong() << "  ";
-		if ((i + 1) % 4 == 0)cout << endl;
-	}
+	print_bit_stream(encryped_text);
 
 	cout << "************************* TEST FINISHED *************************" << endl;
 
